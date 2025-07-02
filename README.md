@@ -145,6 +145,14 @@ The new generated files are:
 - [/contracts/examples/erc6909-extensions.rs](https://github.com/apalpadorDEV/erc6909_draft/blob/main/contracts/examples/erc6909-extensions.rs)
 - [/contracts/examples/erc6909-supply.rs](https://github.com/apalpadorDEV/erc6909_draft/blob/main/contracts/examples/erc6909-supply.rs)
 
+## Tests:
+**In order to execute the elaborate tests:**
+   ```bash
+    cargo update
+    cargo build
+    cargo test -p openzeppelin-stylus
+   ```
+
 ## **Next Steps & Discussion**
 
 - **WASM Test Harness:** Migrate to wasm32-wasi + motsu for on‐chain parity.
@@ -162,6 +170,63 @@ The new generated files are:
 - **Gas cost:** Tracking supply and enumeration in the same _update call is convenient, but it touches multiple storage slots per transfer/mint/burn. In a heavily-used contract this could push you into higher gas brackets.
 
 - **Limited metadata:** We only store token-URI bytes. More advanced metadata schemes (baseURI + tokenID concatenation, on-chain JSON blobs, royalty info) are not covered yet.
+- **Problems with** `cargo tarpaulin -p openzeppelin-stylus --out Html` :
+  ```bash
+  rm Cargo.lock
+  cargo update
+  cargo build
+  cargo tarpaulin -p openzeppelin-stylus --out Html
+   ```
+  **Output Error:**
+    ```bash
+       Compiling stylus-test v0.9.0
+       Compiling stylus-sdk v0.9.0
+    error: Broken pipe (os error 32)
+    warning: build failed, waiting for other jobs to finish...
+    error: could not compile `stylus-sdk` (lib) due to 1 previous error
+    2025-07-01T00:12:07.355960Z ERROR cargo_tarpaulin: Failed to compile tests!
+    error[E0463]: can't find crate for `stylus_proc`
+      --> /home/ubu/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/stylus-sdk-0.9.0/src/lib.rs:45:9
+       |
+    45 | pub use stylus_proc;
+       |         ^^^^^^^^^^^ can't find crate
+    
+    
+    Error: "Failed to compile tests!\nerror[E0463]: can't find crate for `stylus_proc`\n  --> /home/ubu/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/stylus-sdk-0.9.0/src/lib.rs:45:9\n   |\n45 | pub use stylus_proc;\n   |         ^^^^^^^^^^^ can't find crate\n\n"
+   ```
+
+
+- **Checking with** `cargo audit` we discover potencial `unmaintained problems` like:
+    ```bash
+    Crate:    proc-macro-error
+    Version:   1.0.4
+    Warning:   unmaintained
+    Title:     proc-macro-error is unmaintained
+    Date:      2024-09-01
+    ID:        RUSTSEC-2024-0370
+    URL:       https://rustsec.org/advisories/RUSTSEC-2024-0370
+    ```
+  
+    ```bash
+    Crate:     derivative
+    Version:   2.2.0
+    Warning:   unmaintained
+    Title:     `derivative` is unmaintained; consider using an alternative
+    Date:      2024-06-26
+    ID:        RUSTSEC-2024-0388
+    URL:       https://rustsec.org/advisories/RUSTSEC-2024-0388
+    ```
+
+    ```bash
+    Crate:     paste
+    Version:   1.0.15
+    Warning:   unmaintained
+    Title:     paste - no longer maintained
+    Date:      2024-10-07
+    ID:        RUSTSEC-2024-0436
+    URL:       https://rustsec.org/advisories/RUSTSEC-2024-0436
+    ```
+      
 
 ## 🚀 **Future Improvements**
 **1. Re-introduce a generic CompositeToken**
@@ -185,5 +250,3 @@ The new generated files are:
 **6. Extended metadata & royalties**
 
 - Build an ERC-6909 extension for royalty info (mirroring ERC-2981) or on-chain JSON storage (e.g. JSON pointers into a merkle-tree), so you can support richer metadata without blowing out per-token storage too much.
-
-
